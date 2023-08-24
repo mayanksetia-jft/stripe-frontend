@@ -25,9 +25,33 @@ const data = [
 	},
 ];
 const Home = () => {
-	const [userId, setUserId] = useState('');
+	const [userId, setUserId] = useState('1234'); //replace with userID from DB
 	const [userName, setUserName] = useState('');
 	const [planType, setPlanType] = useState('');
+
+	const checkout = (plan) => {
+		console.log('checkout')
+		fetch('http://localhost:8080/api/create-subscription-checkout-session', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			mode: 'cors',
+			body: JSON.stringify({ plan, customerId: userId }),
+		})
+			.then((res) => {
+				if (res.ok) return res.json();
+				console.log(res);
+				return res.json().then((json) => Promise.reject(json));
+			})
+			.then(({session}) => {
+				console.log(session)
+				window.location = session.url;
+			})
+			.catch((e) => {
+				console.error(e);
+			});
+	};
 
 	return (
 		<>
@@ -70,7 +94,12 @@ const Home = () => {
 								{planType === item.title.toLowerCase() ? (
 									<button className='bg-green-600 text-white rounded-md text-base uppercase w-auto py-2 px-4 font-bold'>Subscribed</button>
 								) : (
-									<button onClick={''} className='bg-[#3d5fc4] text-white rounded-md text-base uppercase w-24 py-2 font-bold'>
+									<button
+										onClick={() => {
+											checkout(item);
+										}}
+										className='bg-[#3d5fc4] text-white rounded-md text-base uppercase w-24 py-2 font-bold'
+									>
 										Start
 									</button>
 								)}
